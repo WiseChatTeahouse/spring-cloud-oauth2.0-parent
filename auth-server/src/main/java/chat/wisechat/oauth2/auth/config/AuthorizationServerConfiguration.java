@@ -80,7 +80,7 @@ public class AuthorizationServerConfiguration {
 
 
     /**
-     * 请求转换器
+     * 请求转换器  注入到OAuth2TokenEndpointFilter中
      *
      * @return DelegatingAuthenticationConverter
      */

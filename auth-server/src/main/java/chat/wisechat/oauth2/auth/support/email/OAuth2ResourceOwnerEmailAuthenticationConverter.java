@@ -7,4 +7,11 @@ import chat.wisechat.oauth2.auth.support.base.OAuth2ResourceOwnerBaseAuthenticat
  * @Date 2025/10/14  21:19
  */
 public class OAuth2ResourceOwnerEmailAuthenticationConverter extends OAuth2ResourceOwnerBaseAuthenticationConverter {
+
+    private static final String EMAIL = "email";
+
+    @Override
+    public boolean support(String grantType) {
+        return EMAIL.equals(grantType);
+    }
 }
