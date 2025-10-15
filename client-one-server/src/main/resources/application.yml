@@ -1,0 +1,18 @@
+server:
+  port: 7911
+spring:
+  application:
+    name: client-one-server
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+      file-size-threshold: 5KB #文件写入内存大小 超过写磁盘
+      resolve-lazily: false
+
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: true
+    service-url:
+      defaultZone: http://localhost:8761/eureka
