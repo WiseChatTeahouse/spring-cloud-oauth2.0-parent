@@ -15,6 +15,10 @@ public interface ChargeUserDetailsService extends UserDetailsService, Ordered {
         return false;
     }
 
+    default boolean evcsSupport(String type, String selfOperator) {
+        return false;
+    }
+
     @Override
     default int getOrder() {
         return 0;
