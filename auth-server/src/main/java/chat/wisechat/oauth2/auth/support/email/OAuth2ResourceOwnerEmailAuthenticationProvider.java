@@ -9,6 +9,6 @@ import chat.wisechat.oauth2.auth.support.base.OAuth2ResourceOwnerBaseAuthenticat
 public class OAuth2ResourceOwnerEmailAuthenticationProvider extends OAuth2ResourceOwnerBaseAuthenticationProvider {
     @Override
     public boolean supports(Class<?> authentication) {
-        return false;
+        return OAuth2ResourceOwnerEmailAuthenticationToken.class.isAssignableFrom(authentication);
     }
 }

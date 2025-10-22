@@ -70,7 +70,7 @@ public abstract class OAuth2ResourceOwnerBaseAuthenticationConverter implements 
                 additionalParameters.put(key, (value.size() == 1) ? value.get(0) : value.toArray(new String[0]));
             }
         });
-
+        // TODO:待实现 每种方式具体的认证主体
         return new OAuth2AuthorizationCodeAuthenticationToken(code, clientPrincipal, redirectUri, additionalParameters);
     }
 
