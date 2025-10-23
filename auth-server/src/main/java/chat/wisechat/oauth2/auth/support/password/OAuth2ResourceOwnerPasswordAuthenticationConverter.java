@@ -2,13 +2,18 @@ package chat.wisechat.oauth2.auth.support.password;
 
 import chat.wisechat.oauth2.auth.support.base.OAuth2ResourceOwnerBaseAuthenticationConverter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @Author Siberia.Hu
  * @Date 2025/10/14  21:18
  */
 @Slf4j
-public class OAuth2ResourceOwnerPasswordAuthenticationConverter extends OAuth2ResourceOwnerBaseAuthenticationConverter {
+public class OAuth2ResourceOwnerPasswordAuthenticationConverter extends OAuth2ResourceOwnerBaseAuthenticationConverter<OAuth2ResourceOwnerPasswordAuthenticationToken> {
 
     private static final String PASSWORD = "password";
 
@@ -16,5 +21,10 @@ public class OAuth2ResourceOwnerPasswordAuthenticationConverter extends OAuth2Re
     public boolean support(String grantType) {
         log.debug("AuthenticationConverter = {} grantType = {}", PASSWORD, grantType);
         return PASSWORD.equals(grantType);
+    }
+
+    @Override
+    public OAuth2ResourceOwnerPasswordAuthenticationToken buildAuthenticationToken(Authentication clientPrincipal, Set<String> requestedScopes, Map<String, Object> additionalParameters) {
+        return new OAuth2ResourceOwnerPasswordAuthenticationToken(new AuthorizationGrantType(PASSWORD), clientPrincipal, requestedScopes, additionalParameters);
     }
 }
