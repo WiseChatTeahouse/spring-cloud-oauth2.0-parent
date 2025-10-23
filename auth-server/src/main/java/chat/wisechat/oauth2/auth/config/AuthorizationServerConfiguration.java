@@ -15,11 +15,16 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.config.Customizer;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.settings.AuthorizationServerSettings;
+import org.springframework.security.oauth2.server.authorization.token.DelegatingOAuth2TokenGenerator;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2AccessTokenGenerator;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2RefreshTokenGenerator;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AuthorizationCodeAuthenticationConverter;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AuthorizationCodeRequestAuthenticationConverter;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2ClientCredentialsAuthenticationConverter;
@@ -56,26 +61,53 @@ public class AuthorizationServerConfiguration {
                 // 个性化OAuth2 令牌端点
                 .with(authorizationServerConfigurer, (authorizationServer) ->
                         authorizationServer
+                                .authorizationService(authorizationService)
+                                .authorizationServerSettings(AuthorizationServerSettings.builder().issuer("https://wisechat.chat").build())
                                 .tokenEndpoint(tokenEndpoint -> tokenEndpoint
                                         // 自定义请求转换器
                                         .accessTokenRequestConverter(accessTokenRequestConverter())
                                         // 用户名密码处理
                                         .authenticationProvider(new DatabaseUserDetailsAuthenticationProvider())
                                         // 用户名密码处理
-                                        .authenticationProvider(new OAuth2ResourceOwnerPasswordAuthenticationProvider())
+                                        .authenticationProvider(addPasswordAuthenticationProvider(http))
                                         // 短信处理
-                                        .authenticationProvider(new OAuth2ResourceOwnerSmsAuthenticationProvider())
+                                        .authenticationProvider(addSmsAuthenticationProvider(http))
                                         // 邮箱处理
-                                        .authenticationProvider(new OAuth2ResourceOwnerEmailAuthenticationProvider())
+                                        .authenticationProvider(addEmailAuthenticationProvider(http))
                                         // 互联互通处理
-                                        .authenticationProvider(new OAuth2ResourceOwnerEvcsAuthenticationProvider())))
-                .with(authorizationServerConfigurer.authorizationService(authorizationService)
-                                //设置iss 的签发信息
-                                .authorizationServerSettings(AuthorizationServerSettings.builder().issuer("https://wisechat.chat").build())
-                        , Customizer.withDefaults())
+                                        .authenticationProvider(addEvcsAuthenticationProvider(http))))
                 //所有请求
-                .authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated());
+                .authorizeHttpRequests(authorize -> authorize.anyRequest().permitAll());
+
         return http.build();
+    }
+
+    private AuthenticationProvider addSmsAuthenticationProvider(HttpSecurity http) {
+        AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+        OAuth2AuthorizationService authorizationService = http.getSharedObject(OAuth2AuthorizationService.class);
+        return new OAuth2ResourceOwnerSmsAuthenticationProvider(
+                authorizationService, oAuth2TokenGenerator(), authenticationManager);
+    }
+
+    private AuthenticationProvider addEmailAuthenticationProvider(HttpSecurity http) {
+        AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+        OAuth2AuthorizationService authorizationService = http.getSharedObject(OAuth2AuthorizationService.class);
+        return new OAuth2ResourceOwnerEmailAuthenticationProvider(
+                authorizationService, oAuth2TokenGenerator(), authenticationManager);
+    }
+
+    private AuthenticationProvider addEvcsAuthenticationProvider(HttpSecurity http) {
+        AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+        OAuth2AuthorizationService authorizationService = http.getSharedObject(OAuth2AuthorizationService.class);
+        return new OAuth2ResourceOwnerEvcsAuthenticationProvider(
+                authorizationService, oAuth2TokenGenerator(), authenticationManager);
+    }
+
+    private AuthenticationProvider addPasswordAuthenticationProvider(HttpSecurity http) {
+        AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+        OAuth2AuthorizationService authorizationService = http.getSharedObject(OAuth2AuthorizationService.class);
+        return new OAuth2ResourceOwnerPasswordAuthenticationProvider(
+                authorizationService, oAuth2TokenGenerator(), authenticationManager);
     }
 
 
@@ -97,5 +129,10 @@ public class AuthorizationServerConfiguration {
                 new OAuth2ClientCredentialsAuthenticationConverter(),
                 new OAuth2AuthorizationCodeAuthenticationConverter(),
                 new OAuth2AuthorizationCodeRequestAuthenticationConverter()));
+    }
+
+    @Bean
+    public OAuth2TokenGenerator<?> oAuth2TokenGenerator() {
+        return new DelegatingOAuth2TokenGenerator(new OAuth2AccessTokenGenerator(), new OAuth2RefreshTokenGenerator());
     }
 }
