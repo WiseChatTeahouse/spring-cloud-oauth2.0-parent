@@ -17,12 +17,10 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
     <modules>
-        <module>auth-server</module>
-        <module>client-one-server</module>
-        <module>client-two-server</module>
-        <module>gateway-server</module>
-        <module>eureka-server</module>
         <module>oauth2-common</module>
+        <module>oauth2-server</module>
+        <module>oauth2-gateway</module>
+        <module>oauth2-api</module>
     </modules>
 
     <properties>
