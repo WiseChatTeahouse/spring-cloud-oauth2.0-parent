@@ -1,7 +1,10 @@
 package chat.wisechat.oauth2.system.controller;
 
+import chat.wisechat.oauth2.system.dto.OauthClientInfoDto;
 import chat.wisechat.oauth2.system.service.OauthClientInfoService;
 import jakarta.annotation.Resource;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,6 +17,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class OauthClientInfoController {
 
     @Resource
-    private OauthClientInfoService oauthClientService;
+    private OauthClientInfoService oauthClientInfoService;
+
+    @PostMapping("/addClientInfo")
+    public void addClientInfo(@RequestBody OauthClientInfoDto dto) {
+        oauthClientInfoService.addClientInfo(dto);
+    }
 
 }

@@ -1,5 +1,6 @@
 package chat.wisechat.oauth2.system.service.impl;
 
+import chat.wisechat.oauth2.system.dto.OauthClientInfoDto;
 import chat.wisechat.oauth2.system.entity.OauthClientInfo;
 import chat.wisechat.oauth2.system.mapper.OauthClientInfoMapper;
 import chat.wisechat.oauth2.system.service.OauthClientInfoService;
@@ -15,6 +16,14 @@ import org.springframework.stereotype.Service;
 @Service
 public class OauthClientInfoServiceImpl extends ServiceImpl<OauthClientInfoMapper, OauthClientInfo> implements OauthClientInfoService {
 
+
+    @Override
+    public void addClientInfo(OauthClientInfoDto dto) {
+        OauthClientInfo oauthClientInfo = new OauthClientInfo();
+        BeanUtils.copyProperties(dto, oauthClientInfo);
+        save(oauthClientInfo);
+    }
+
     @Override
     public OauthClientInfoVo findClientInfoByClientId(String clientId) {
         OauthClientInfo oauthClientInfo = lambdaQuery().eq(OauthClientInfo::getClientId, clientId).one();
@@ -22,5 +31,6 @@ public class OauthClientInfoServiceImpl extends ServiceImpl<OauthClientInfoMappe
         BeanUtils.copyProperties(oauthClientInfo, oauthClientInfoVo);
         return oauthClientInfoVo;
     }
+
 
 }
