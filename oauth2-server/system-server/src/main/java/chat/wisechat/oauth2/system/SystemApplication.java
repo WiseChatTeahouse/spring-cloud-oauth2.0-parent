@@ -1,4 +1,4 @@
-package chat.wisechat.oauth2.client;
+package chat.wisechat.oauth2.system;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
