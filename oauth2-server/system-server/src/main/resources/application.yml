@@ -2,7 +2,7 @@ server:
   port: 7911
 spring:
   application:
-    name: client-one-server
+    name: system-server
   servlet:
     multipart:
       max-file-size: 100MB

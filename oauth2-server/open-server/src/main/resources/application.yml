@@ -2,7 +2,7 @@ server:
   port: 7912
 spring:
   application:
-    name: client-two-server
+    name: open-server
   servlet:
     multipart:
       max-file-size: 100MB
