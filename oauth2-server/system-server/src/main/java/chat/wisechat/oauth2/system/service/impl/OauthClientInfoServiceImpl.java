@@ -6,6 +6,8 @@ import chat.wisechat.oauth2.system.mapper.OauthClientInfoMapper;
 import chat.wisechat.oauth2.system.service.OauthClientInfoService;
 import chat.wisechat.oauth2.system.vo.OauthClientInfoVo;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
@@ -21,7 +23,11 @@ public class OauthClientInfoServiceImpl extends ServiceImpl<OauthClientInfoMappe
     public void addClientInfo(OauthClientInfoDto dto) {
         OauthClientInfo oauthClientInfo = new OauthClientInfo();
         BeanUtils.copyProperties(dto, oauthClientInfo);
-        //String randomStr = RandomStringUtils.secure().nextAlphanumeric(16);  随机字符串生成
+        String clientSecret = oauthClientInfo.getClientSecret();
+        if (StringUtils.isBlank(clientSecret)) {
+            String randomStr = RandomStringUtils.secure().nextAlphanumeric(16);// 随机字符串生成
+            oauthClientInfo.setClientSecret(randomStr);
+        }
         save(oauthClientInfo);
     }
 
