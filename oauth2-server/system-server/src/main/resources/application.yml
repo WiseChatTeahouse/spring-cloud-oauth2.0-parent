@@ -9,6 +9,12 @@ spring:
       max-request-size: 100MB
       file-size-threshold: 5KB #文件写入内存大小 超过写磁盘
       resolve-lazily: false
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: speed_charge_mysql
+    url: jdbc:mysql://8.148.226.23:13306/oauth2.1?characterEncoding=utf8&useSSL=false&autoReconnect=true&serverTimezone=Asia/Shanghai
+
 
 eureka:
   client:

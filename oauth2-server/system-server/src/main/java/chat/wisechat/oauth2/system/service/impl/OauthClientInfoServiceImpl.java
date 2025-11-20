@@ -21,6 +21,7 @@ public class OauthClientInfoServiceImpl extends ServiceImpl<OauthClientInfoMappe
     public void addClientInfo(OauthClientInfoDto dto) {
         OauthClientInfo oauthClientInfo = new OauthClientInfo();
         BeanUtils.copyProperties(dto, oauthClientInfo);
+        //String randomStr = RandomStringUtils.secure().nextAlphanumeric(16);  随机字符串生成
         save(oauthClientInfo);
     }
 
