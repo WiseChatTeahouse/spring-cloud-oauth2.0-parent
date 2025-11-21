@@ -13,7 +13,7 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.security.oauth2.server.authorization.settings.OAuth2TokenFormat;
 import org.springframework.security.oauth2.server.authorization.settings.TokenSettings;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  * @Author Siberia.Hu
  * @Date 2025/11/18  21:23
  */
-@Service
+@Component
 public class RemoteRegisteredClientRepository implements RegisteredClientRepository {
 
     @Resource
@@ -48,7 +48,7 @@ public class RemoteRegisteredClientRepository implements RegisteredClientReposit
         OauthClientInfoVo oauthClientInfo = Optional.of(remoteOauthClientInfoFeign.findClientInfoByClientId(clientId))
                 .orElseThrow(() -> new OAuth2AuthorizationCodeRequestAuthenticationException(
                         new OAuth2Error("客户端信息查询失败，请检查配置"), null));
-
+        // TODO: oauthClientInfo为null时需要怎么处理
         // 构建客户端对象
         RegisteredClient.Builder builder = RegisteredClient.withId(oauthClientInfo.getClientId())
                 .clientId(oauthClientInfo.getClientId())
