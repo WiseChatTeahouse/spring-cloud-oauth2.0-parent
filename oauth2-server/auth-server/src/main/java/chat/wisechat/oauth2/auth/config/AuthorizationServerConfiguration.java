@@ -1,18 +1,22 @@
 package chat.wisechat.oauth2.auth.config;
 
 import chat.wisechat.oauth2.auth.handler.ProjectAuthenticationFailureHandler;
+import chat.wisechat.oauth2.auth.support.core.UserDetailsAuthenticationProvider;
 import chat.wisechat.oauth2.auth.support.password.PasswordAuthenticationConverter;
 import chat.wisechat.oauth2.auth.support.password.PasswordAuthenticationProvider;
 import jakarta.annotation.Resource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.token.DelegatingOAuth2TokenGenerator;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2AccessTokenGenerator;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2RefreshTokenGenerator;
 import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AccessTokenResponseAuthenticationSuccessHandler;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 
 import java.util.List;
@@ -25,12 +29,11 @@ import java.util.List;
 public class AuthorizationServerConfiguration {
 
     @Resource
-    private OAuth2AuthorizationService authorizationService;
+    private UserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
-        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer =
-                OAuth2AuthorizationServerConfigurer.authorizationServer();
+        OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = OAuth2AuthorizationServerConfigurer.authorizationServer();
 
         http
                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
@@ -41,9 +44,6 @@ public class AuthorizationServerConfiguration {
                                                 .accessTokenRequestConverters(authenticationConverters ->
                                                         authenticationConverters.addAll(List.of(
                                                                 new PasswordAuthenticationConverter())))
-                                                .authenticationProviders(authenticationProviders ->
-                                                        authenticationProviders.addAll(List.of(
-                                                                new PasswordAuthenticationProvider(authorizationService, new DelegatingOAuth2TokenGenerator(new OAuth2AccessTokenGenerator(), new OAuth2RefreshTokenGenerator())))))
                                                 .accessTokenResponseHandler(new OAuth2AccessTokenResponseAuthenticationSuccessHandler())
                                                 .errorResponseHandler(new ProjectAuthenticationFailureHandler()))
                                 .clientAuthentication(clientAuthentication -> {
@@ -52,7 +52,15 @@ public class AuthorizationServerConfiguration {
                                 })
                 );
 
-        return http.build();
+        DefaultSecurityFilterChain build = http.build();
+
+        AuthenticationManager authenticationManager = http.getSharedObject(AuthenticationManager.class);
+        OAuth2AuthorizationService authorizationService = http.getSharedObject(OAuth2AuthorizationService.class);
+        http.authenticationProvider(new UserDetailsAuthenticationProvider(userDetailsService));
+        http.authenticationProvider(new PasswordAuthenticationProvider(authorizationService, authenticationManager,
+                new DelegatingOAuth2TokenGenerator(new OAuth2AccessTokenGenerator(), new OAuth2RefreshTokenGenerator())));
+
+        return build;
     }
 
 }

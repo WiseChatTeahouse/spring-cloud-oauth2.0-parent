@@ -1,6 +1,7 @@
 package chat.wisechat.oauth2.auth.support.password;
 
 import chat.wisechat.oauth2.auth.support.base.BaseAuthenticationProvider;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.oauth2.core.OAuth2Token;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
@@ -11,8 +12,8 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
  */
 public class PasswordAuthenticationProvider extends BaseAuthenticationProvider {
 
-    public PasswordAuthenticationProvider(OAuth2AuthorizationService authorizationService, OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator) {
-        super(authorizationService, tokenGenerator);
+    public PasswordAuthenticationProvider(OAuth2AuthorizationService authorizationService, AuthenticationManager authenticationManager, OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator) {
+        super(authorizationService, authenticationManager, tokenGenerator);
     }
 
     @Override

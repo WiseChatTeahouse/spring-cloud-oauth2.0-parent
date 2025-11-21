@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
  * @Author Siberia.Hu
  * @Date 2025/11/18  21:48
  */
-@FeignClient(name = "system-server", url = "http://localhost:7911")
+@FeignClient(name = "remoteOauthClientInfoFeign", url = "http://localhost:7911")
 public interface RemoteOauthClientInfoFeign {
     @GetMapping("/api/client/findClientInfoByClientId/{clientId}")
     OauthClientInfoVo findClientInfoByClientId(@PathVariable("clientId") String clientId);

@@ -1,6 +1,7 @@
 package chat.wisechat.oauth2.auth.support.base;
 
 import chat.wisechat.oauth2.auth.support.password.PasswordAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,10 +35,13 @@ import java.util.Set;
  * @Date 2025/11/21 10:09
  */
 public abstract class BaseAuthenticationProvider implements AuthenticationProvider {
+
+    private final AuthenticationManager authenticationManager;
     private final OAuth2AuthorizationService authorizationService;
     private final OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator;
 
-    public BaseAuthenticationProvider(OAuth2AuthorizationService authorizationService, OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator) {
+    public BaseAuthenticationProvider(OAuth2AuthorizationService authorizationService, AuthenticationManager authenticationManager, OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator) {
+        this.authenticationManager = authenticationManager;
         this.authorizationService = authorizationService;
         this.tokenGenerator = tokenGenerator;
     }
@@ -61,12 +65,12 @@ public abstract class BaseAuthenticationProvider implements AuthenticationProvid
         String password = (String) additionalParameters.get(OAuth2ParameterNames.PASSWORD);
 
         UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
-
+        Authentication authenticate = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
 
         // @formatter:off
         DefaultOAuth2TokenContext.Builder tokenContextBuilder = DefaultOAuth2TokenContext.builder()
                 .registeredClient(registeredClient)
-                .principal(usernamePasswordAuthenticationToken)
+                .principal(authenticate)
                 .authorizationServerContext(AuthorizationServerContextHolder.getContext())
                 .authorizedScopes(authorizedScopes)
                 .tokenType(OAuth2TokenType.ACCESS_TOKEN)
