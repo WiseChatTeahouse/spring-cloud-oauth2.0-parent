@@ -1,5 +1,6 @@
 package chat.wisechat.oauth2.auth.support.core;
 
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.InternalAuthenticationServiceException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.authentication.dao.AbstractUserDetailsAuthenticationProvider;
@@ -7,11 +8,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.util.function.SingletonSupplier;
-
-import java.util.function.Supplier;
 
 /**
  * @Author Siberia.Hu
@@ -21,8 +19,7 @@ public class UserDetailsAuthenticationProvider extends AbstractUserDetailsAuthen
 
     private static final String USER_NOT_FOUND_PASSWORD = "userNotFoundPassword";
 
-    private Supplier<PasswordEncoder> passwordEncoder = SingletonSupplier
-            .of(PasswordEncoderFactories::createDelegatingPasswordEncoder);
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     private UserDetailsService userDetailsService;
 
@@ -34,13 +31,21 @@ public class UserDetailsAuthenticationProvider extends AbstractUserDetailsAuthen
 
     @Override
     protected void additionalAuthenticationChecks(UserDetails userDetails, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-        System.out.println("哈哈");
+        if (authentication.getCredentials() == null) {
+            this.logger.debug("Failed to authenticate since no credentials provided");
+            throw new BadCredentialsException(this.messages
+                    .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
+        }
+        String presentedPassword = authentication.getCredentials().toString();
+        if (!this.passwordEncoder.matches(presentedPassword, userDetails.getPassword())) {
+            this.logger.debug("Failed to authenticate since password does not match stored value");
+            throw new BadCredentialsException(this.messages
+                    .getMessage("AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
+        }
     }
 
     @Override
     protected UserDetails retrieveUser(String username, UsernamePasswordAuthenticationToken authentication) throws AuthenticationException {
-        System.out.println("哦哈哈");
-
         prepareTimingAttackProtection();
         try {
             UserDetails loadedUser = this.getUserDetailsService().loadUserByUsername(username);
@@ -61,7 +66,7 @@ public class UserDetailsAuthenticationProvider extends AbstractUserDetailsAuthen
 
     private void prepareTimingAttackProtection() {
         if (this.userNotFoundEncodedPassword == null) {
-            this.userNotFoundEncodedPassword = this.passwordEncoder.get().encode(USER_NOT_FOUND_PASSWORD);
+            this.userNotFoundEncodedPassword = this.passwordEncoder.encode(USER_NOT_FOUND_PASSWORD);
         }
     }
 

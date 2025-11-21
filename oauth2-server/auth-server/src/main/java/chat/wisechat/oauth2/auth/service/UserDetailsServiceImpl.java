@@ -1,12 +1,19 @@
 package chat.wisechat.oauth2.auth.service;
 
+import chat.wisechat.oauth2.auth.support.ProjectUser;
 import chat.wisechat.oauth2.system.feign.RemoteUserInfoFeign;
 import chat.wisechat.oauth2.system.vo.UserInfoVo;
 import jakarta.annotation.Resource;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @Author Siberia.Hu
@@ -21,7 +28,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         UserInfoVo userInfoVo = remoteUserInfoFeign.loadUserByUsername(username);
-        System.out.println("获取到用户信息");
-        return null;
+        Set<String> dbAuthsSet = new HashSet<>();
+        dbAuthsSet.add("ROLE_" + "ADMIN");
+        Collection<GrantedAuthority> authorities = AuthorityUtils
+                .createAuthorityList(dbAuthsSet.toArray(new String[0]));
+        return new ProjectUser(userInfoVo.getUsername(), userInfoVo.getPassword(), authorities);
     }
 }
