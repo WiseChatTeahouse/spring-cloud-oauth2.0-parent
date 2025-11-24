@@ -3,6 +3,7 @@ package chat.wisechat.oauth2.auth.support.base;
 import chat.wisechat.oauth2.auth.support.password.PasswordAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -10,6 +11,7 @@ import org.springframework.security.oauth2.core.AuthorizationGrantType;
 import org.springframework.security.oauth2.core.ClaimAccessor;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
 import org.springframework.security.oauth2.core.OAuth2Token;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
@@ -59,15 +61,16 @@ public abstract class BaseAuthenticationProvider implements AuthenticationProvid
 
         Set<String> authorizedScopes = new LinkedHashSet<>(clientCredentialsAuthentication.getScopes());
 
-        Map<String, Object> additionalParameters = clientCredentialsAuthentication.getAdditionalParameters();
+        try {
+            Map<String, Object> additionalParameters = clientCredentialsAuthentication.getAdditionalParameters();
 
-        String username = (String) additionalParameters.get(OAuth2ParameterNames.USERNAME);
-        String password = (String) additionalParameters.get(OAuth2ParameterNames.PASSWORD);
+            String username = (String) additionalParameters.get(OAuth2ParameterNames.USERNAME);
+            String password = (String) additionalParameters.get(OAuth2ParameterNames.PASSWORD);
 
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
-        Authentication authenticate = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
+            UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
+            Authentication authenticate = authenticationManager.authenticate(usernamePasswordAuthenticationToken);
 
-        // @formatter:off
+            // @formatter:off
         DefaultOAuth2TokenContext.Builder tokenContextBuilder = DefaultOAuth2TokenContext.builder()
                 .registeredClient(registeredClient)
                 .principal(authenticate)
@@ -78,26 +81,34 @@ public abstract class BaseAuthenticationProvider implements AuthenticationProvid
                 .authorizationGrant(clientCredentialsAuthentication);
         // @formatter:on
 
-        OAuth2TokenContext tokenContext = tokenContextBuilder.build();
+            OAuth2TokenContext tokenContext = tokenContextBuilder.build();
 
-        OAuth2Token generatedAccessToken = this.tokenGenerator.generate(tokenContext);
+            OAuth2Token generatedAccessToken = this.tokenGenerator.generate(tokenContext);
 
 
-        // @formatter:off
+            // @formatter:off
         OAuth2Authorization.Builder authorizationBuilder = OAuth2Authorization.withRegisteredClient(registeredClient)
                 .principalName(clientPrincipal.getName())
                 .authorizationGrantType(AuthorizationGrantType.CLIENT_CREDENTIALS)
                 .authorizedScopes(authorizedScopes);
         // @formatter:on
 
-        OAuth2AccessToken accessToken = accessToken(authorizationBuilder, generatedAccessToken, tokenContext);
+            OAuth2AccessToken accessToken = accessToken(authorizationBuilder, generatedAccessToken, tokenContext);
 
-        OAuth2Authorization authorization = authorizationBuilder.build();
+            OAuth2Authorization authorization = authorizationBuilder.build();
 
-        this.authorizationService.save(authorization);
+            this.authorizationService.save(authorization);
 
 
-        return new OAuth2AccessTokenAuthenticationToken(registeredClient, clientPrincipal, accessToken);
+            return new OAuth2AccessTokenAuthenticationToken(registeredClient, clientPrincipal, accessToken);
+        } catch (AuthenticationException e) {
+            if (e instanceof BadCredentialsException) {
+                throw new OAuth2AuthenticationException(
+                        new OAuth2Error("bad_credentials",
+                                "AbstractUserDetailsAuthenticationProvider.badCredentials", "Bad credentials"));
+            }
+            throw new OAuth2AuthenticationException("bad_credentials");
+        }
     }
 
     private static OAuth2ClientAuthenticationToken getAuthenticatedClientElseThrowInvalidClient(Authentication authentication) {

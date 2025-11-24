@@ -4,6 +4,7 @@ import chat.wisechat.oauth2.auth.support.ProjectUser;
 import chat.wisechat.oauth2.system.feign.RemoteUserInfoFeign;
 import chat.wisechat.oauth2.system.vo.UserInfoVo;
 import jakarta.annotation.Resource;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -19,6 +20,7 @@ import java.util.Set;
  * @Author Siberia.Hu
  * @Date 2025/11/21 14:21
  */
+@Primary
 @Component
 public class UserDetailsServiceImpl implements UserDetailsService {
 

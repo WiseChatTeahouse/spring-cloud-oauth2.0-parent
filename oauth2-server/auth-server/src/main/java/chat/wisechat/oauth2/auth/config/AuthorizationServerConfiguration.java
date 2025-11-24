@@ -50,7 +50,7 @@ public class AuthorizationServerConfiguration {
                                 })
                                 .authorizationEndpoint(authorizationEndpoint -> {
                                 })
-                );
+                ).authorizeHttpRequests(authorizeRequest -> authorizeRequest.anyRequest().permitAll());
 
         DefaultSecurityFilterChain build = http.build();
 
