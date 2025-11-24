@@ -1,6 +1,7 @@
 package chat.wisechat.oauth2.auth.config;
 
 import chat.wisechat.oauth2.auth.handler.ProjectAuthenticationFailureHandler;
+import chat.wisechat.oauth2.auth.handler.ProjectAuthenticationSuccessHandler;
 import chat.wisechat.oauth2.auth.support.core.UserDetailsAuthenticationProvider;
 import chat.wisechat.oauth2.auth.support.password.PasswordAuthenticationConverter;
 import chat.wisechat.oauth2.auth.support.password.PasswordAuthenticationProvider;
@@ -15,7 +16,6 @@ import org.springframework.security.oauth2.server.authorization.config.annotatio
 import org.springframework.security.oauth2.server.authorization.token.DelegatingOAuth2TokenGenerator;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2AccessTokenGenerator;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2RefreshTokenGenerator;
-import org.springframework.security.oauth2.server.authorization.web.authentication.OAuth2AccessTokenResponseAuthenticationSuccessHandler;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -44,7 +44,7 @@ public class AuthorizationServerConfiguration {
                                                 .accessTokenRequestConverters(authenticationConverters ->
                                                         authenticationConverters.addAll(List.of(
                                                                 new PasswordAuthenticationConverter())))
-                                                .accessTokenResponseHandler(new OAuth2AccessTokenResponseAuthenticationSuccessHandler())
+                                                .accessTokenResponseHandler(new ProjectAuthenticationSuccessHandler())
                                                 .errorResponseHandler(new ProjectAuthenticationFailureHandler()))
                                 .clientAuthentication(clientAuthentication -> {
                                 })

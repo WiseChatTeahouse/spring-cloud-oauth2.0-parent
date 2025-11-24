@@ -13,6 +13,7 @@ import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.OAuth2ErrorCodes;
+import org.springframework.security.oauth2.core.OAuth2RefreshToken;
 import org.springframework.security.oauth2.core.OAuth2Token;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.server.authorization.OAuth2Authorization;
@@ -41,6 +42,7 @@ public abstract class BaseAuthenticationProvider implements AuthenticationProvid
     private final AuthenticationManager authenticationManager;
     private final OAuth2AuthorizationService authorizationService;
     private final OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator;
+    private static final String ERROR_URI = "https://datatracker.ietf.org/doc/html/rfc6749#section-5.2";
 
     public BaseAuthenticationProvider(OAuth2AuthorizationService authorizationService, AuthenticationManager authenticationManager, OAuth2TokenGenerator<? extends OAuth2Token> tokenGenerator) {
         this.authenticationManager = authenticationManager;
@@ -95,12 +97,29 @@ public abstract class BaseAuthenticationProvider implements AuthenticationProvid
 
             OAuth2AccessToken accessToken = accessToken(authorizationBuilder, generatedAccessToken, tokenContext);
 
+            // ----- Refresh token -----
+            OAuth2RefreshToken refreshToken = null;
+            // Do not issue refresh token to public client
+            if (registeredClient.getAuthorizationGrantTypes().contains(new AuthorizationGrantType("password"))) {
+                tokenContext = tokenContextBuilder.tokenType(OAuth2TokenType.REFRESH_TOKEN).build();
+                OAuth2Token generatedRefreshToken = this.tokenGenerator.generate(tokenContext);
+                if (generatedRefreshToken != null) {
+                    if (!(generatedRefreshToken instanceof OAuth2RefreshToken)) {
+                        OAuth2Error error = new OAuth2Error(OAuth2ErrorCodes.SERVER_ERROR,
+                                "The token generator failed to generate a valid refresh token.", ERROR_URI);
+                        throw new OAuth2AuthenticationException(error);
+                    }
+                    refreshToken = (OAuth2RefreshToken) generatedRefreshToken;
+                    authorizationBuilder.refreshToken(refreshToken);
+                }
+            }
+
             OAuth2Authorization authorization = authorizationBuilder.build();
 
             this.authorizationService.save(authorization);
 
 
-            return new OAuth2AccessTokenAuthenticationToken(registeredClient, clientPrincipal, accessToken);
+            return new OAuth2AccessTokenAuthenticationToken(registeredClient, clientPrincipal, accessToken, refreshToken);
         } catch (AuthenticationException e) {
             if (e instanceof BadCredentialsException) {
                 throw new OAuth2AuthenticationException(
