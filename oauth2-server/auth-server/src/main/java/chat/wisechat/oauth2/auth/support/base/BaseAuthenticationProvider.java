@@ -27,6 +27,7 @@ import org.springframework.security.oauth2.server.authorization.settings.OAuth2T
 import org.springframework.security.oauth2.server.authorization.token.DefaultOAuth2TokenContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenContext;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
+import org.springframework.util.Assert;
 import org.springframework.util.CollectionUtils;
 
 import java.util.LinkedHashSet;
@@ -117,9 +118,10 @@ public abstract class BaseAuthenticationProvider implements AuthenticationProvid
             OAuth2Authorization authorization = authorizationBuilder.build();
 
             this.authorizationService.save(authorization);
-
-
-            return new OAuth2AccessTokenAuthenticationToken(registeredClient, clientPrincipal, accessToken, refreshToken);
+            Map<String, Object> additionalParameter = authorization.getAccessToken().getClaims();
+            Assert.notNull(additionalParameter, "additionalParameter cannot be null");
+            return new OAuth2AccessTokenAuthenticationToken(registeredClient, clientPrincipal,
+                    accessToken, refreshToken, additionalParameter);
         } catch (AuthenticationException e) {
             if (e instanceof BadCredentialsException) {
                 throw new OAuth2AuthenticationException(

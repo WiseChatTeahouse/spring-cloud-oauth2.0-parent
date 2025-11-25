@@ -2,6 +2,8 @@ package chat.wisechat.oauth2.auth.config;
 
 import chat.wisechat.oauth2.auth.handler.ProjectAuthenticationFailureHandler;
 import chat.wisechat.oauth2.auth.handler.ProjectAuthenticationSuccessHandler;
+import chat.wisechat.oauth2.auth.support.ProjectOAuth2AccessTokenGenerator;
+import chat.wisechat.oauth2.auth.support.ProjectOAuth2TokenCustomizer;
 import chat.wisechat.oauth2.auth.support.core.UserDetailsAuthenticationProvider;
 import chat.wisechat.oauth2.auth.support.password.PasswordAuthenticationConverter;
 import chat.wisechat.oauth2.auth.support.password.PasswordAuthenticationProvider;
@@ -11,11 +13,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.oauth2.core.OAuth2Token;
 import org.springframework.security.oauth2.server.authorization.OAuth2AuthorizationService;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configurers.OAuth2AuthorizationServerConfigurer;
 import org.springframework.security.oauth2.server.authorization.token.DelegatingOAuth2TokenGenerator;
-import org.springframework.security.oauth2.server.authorization.token.OAuth2AccessTokenGenerator;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2RefreshTokenGenerator;
+import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 
@@ -58,9 +61,14 @@ public class AuthorizationServerConfiguration {
         OAuth2AuthorizationService authorizationService = http.getSharedObject(OAuth2AuthorizationService.class);
         http.authenticationProvider(new UserDetailsAuthenticationProvider(userDetailsService));
         http.authenticationProvider(new PasswordAuthenticationProvider(authorizationService, authenticationManager,
-                new DelegatingOAuth2TokenGenerator(new OAuth2AccessTokenGenerator(), new OAuth2RefreshTokenGenerator())));
-
+                new DelegatingOAuth2TokenGenerator(tokenGenerator(), new OAuth2RefreshTokenGenerator())));
         return build;
+    }
+
+    public OAuth2TokenGenerator<OAuth2Token> tokenGenerator() {
+        ProjectOAuth2AccessTokenGenerator accessTokenGenerator = new ProjectOAuth2AccessTokenGenerator();
+        accessTokenGenerator.setAccessTokenCustomizer(new ProjectOAuth2TokenCustomizer());
+        return new DelegatingOAuth2TokenGenerator(accessTokenGenerator, new OAuth2RefreshTokenGenerator());
     }
 
 }
