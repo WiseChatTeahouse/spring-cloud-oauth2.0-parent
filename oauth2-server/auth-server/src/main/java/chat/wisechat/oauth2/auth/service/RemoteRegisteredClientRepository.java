@@ -79,7 +79,7 @@ public class RemoteRegisteredClientRepository implements RegisteredClientReposit
 
         return builder
                 .tokenSettings(TokenSettings.builder()
-                        .accessTokenFormat(OAuth2TokenFormat.REFERENCE)// 只是引用 非实际令牌存储
+                        .accessTokenFormat(OAuth2TokenFormat.SELF_CONTAINED)// 只是引用 非实际令牌存储
                         .accessTokenTimeToLive(Duration.ofSeconds(oauthClientInfo.getAccessTokenValidity()))
                         .refreshTokenTimeToLive(Duration.ofSeconds(oauthClientInfo.getRefreshTokenValidity())).build())
                 .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())
