@@ -120,8 +120,7 @@ public abstract class BaseAuthenticationProvider implements AuthenticationProvid
             this.authorizationService.save(authorization);
             Map<String, Object> additionalParameter = authorization.getAccessToken().getClaims();
             Assert.notNull(additionalParameter, "additionalParameter cannot be null");
-            return new OAuth2AccessTokenAuthenticationToken(registeredClient, clientPrincipal,
-                    accessToken, refreshToken, additionalParameter);
+            return new OAuth2AccessTokenAuthenticationToken(registeredClient, clientPrincipal, accessToken, refreshToken, additionalParameter);
         } catch (AuthenticationException e) {
             if (e instanceof BadCredentialsException) {
                 throw new OAuth2AuthenticationException(
