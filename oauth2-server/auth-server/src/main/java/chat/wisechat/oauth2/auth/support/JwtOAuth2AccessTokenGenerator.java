@@ -1,7 +1,6 @@
 package chat.wisechat.oauth2.auth.support;
 
 import org.springframework.lang.Nullable;
-import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwsHeader;
@@ -17,7 +16,6 @@ import org.springframework.security.oauth2.server.authorization.token.OAuth2Toke
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenGenerator;
 import org.springframework.util.Assert;
-import org.springframework.util.CollectionUtils;
 
 import java.time.Instant;
 import java.util.Collections;
@@ -52,9 +50,6 @@ public class JwtOAuth2AccessTokenGenerator implements OAuth2TokenGenerator<Jwt> 
         // @formatter:on
 
         String issuer = "fast-charge";
-        if (context.getAuthorizationServerContext() != null) {
-            issuer = context.getAuthorizationServerContext().getIssuer();
-        }
         RegisteredClient registeredClient = context.getRegisteredClient();
 
         Instant issuedAt = Instant.now();
@@ -70,50 +65,14 @@ public class JwtOAuth2AccessTokenGenerator implements OAuth2TokenGenerator<Jwt> 
                 .audience(Collections.singletonList(registeredClient.getClientId()))
                 .issuedAt(issuedAt)
                 .expiresAt(expiresAt)
-                .id(UUID.randomUUID().toString())
-                .claim("userID",123);
+                .id(UUID.randomUUID().toString().replace("-",""))
+                .claim("userID",123);// 在这里负上用户信息
         if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
             claimsBuilder.notBefore(issuedAt);
-            if (!CollectionUtils.isEmpty(context.getAuthorizedScopes())) {
-                claimsBuilder.claim(OAuth2ParameterNames.SCOPE, context.getAuthorizedScopes());
-            }
         }
         // @formatter:on
 
         JwsHeader.Builder jwsHeaderBuilder = JwsHeader.with(jwsAlgorithm);
-
-//        if (this.jwtCustomizer != null) {
-//            // @formatter:off
-//            JwtEncodingContext.Builder jwtContextBuilder = JwtEncodingContext.with(jwsHeaderBuilder, claimsBuilder)
-//                    .registeredClient(context.getRegisteredClient())
-//                    .principal(context.getPrincipal())
-//                    .authorizationServerContext(context.getAuthorizationServerContext())
-//                    .authorizedScopes(context.getAuthorizedScopes())
-//                    .tokenType(context.getTokenType())
-//                    .authorizationGrantType(context.getAuthorizationGrantType());
-//            if (context.getAuthorization() != null) {
-//                jwtContextBuilder.authorization(context.getAuthorization());
-//            }
-//            if (context.getAuthorizationGrant() != null) {
-//                jwtContextBuilder.authorizationGrant(context.getAuthorizationGrant());
-//            }
-//            if (OidcParameterNames.ID_TOKEN.equals(context.getTokenType().getValue())) {
-//                SessionInformation sessionInformation = context.get(SessionInformation.class);
-//                if (sessionInformation != null) {
-//                    jwtContextBuilder.put(SessionInformation.class, sessionInformation);
-//                }
-//            }
-//            if (OAuth2TokenType.ACCESS_TOKEN.equals(context.getTokenType())) {
-//                Jwt dPoPProofJwt = context.get(OAuth2TokenContext.DPOP_PROOF_KEY);
-//                if (dPoPProofJwt != null) {
-//                    jwtContextBuilder.put(OAuth2TokenContext.DPOP_PROOF_KEY, dPoPProofJwt);
-//                }
-//            }
-//            // @formatter:on
-//
-//            JwtEncodingContext jwtContext = jwtContextBuilder.build();
-//            this.jwtCustomizer.customize(jwtContext);
-//        }
 
         JwsHeader jwsHeader = jwsHeaderBuilder.build();
         JwtClaimsSet claims = claimsBuilder.build();
