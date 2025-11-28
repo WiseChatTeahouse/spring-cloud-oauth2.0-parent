@@ -2,6 +2,7 @@ package chat.wisechat.oauth2.auth.config;
 
 import chat.wisechat.oauth2.auth.handler.ProjectAuthenticationFailureHandler;
 import chat.wisechat.oauth2.auth.handler.ProjectAuthenticationSuccessHandler;
+import chat.wisechat.oauth2.auth.support.JwtOAuth2AccessTokenGenerator;
 import chat.wisechat.oauth2.auth.support.core.UserDetailsAuthenticationProvider;
 import chat.wisechat.oauth2.auth.support.password.PasswordAuthenticationConverter;
 import chat.wisechat.oauth2.auth.support.password.PasswordAuthenticationProvider;
@@ -59,7 +60,7 @@ public class AuthorizationServerConfiguration {
         OAuth2AuthorizationService authorizationService = http.getSharedObject(OAuth2AuthorizationService.class);
         http.authenticationProvider(new UserDetailsAuthenticationProvider(userDetailsService));
         http.authenticationProvider(new PasswordAuthenticationProvider(authorizationService, authenticationManager,
-                new DelegatingOAuth2TokenGenerator(new JwtGenerator(http.getSharedObject(JwtEncoder.class)), new OAuth2RefreshTokenGenerator())));
+                new DelegatingOAuth2TokenGenerator(new JwtOAuth2AccessTokenGenerator(http.getSharedObject(JwtEncoder.class)), new OAuth2RefreshTokenGenerator())));
         return build;
     }
 
