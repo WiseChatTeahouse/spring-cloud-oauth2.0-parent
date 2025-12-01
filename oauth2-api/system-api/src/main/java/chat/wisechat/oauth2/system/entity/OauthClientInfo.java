@@ -26,10 +26,10 @@ public class OauthClientInfo implements Serializable {
     private Long accessTokenValidity;
     private Long refreshTokenValidity;
     private Integer isDelete;
-    private String createUserId;
+    private Long createUserId;
     private String createUserName;
     private LocalDateTime createTime;
-    private String updateUserId;
+    private Long updateUserId;
     private String updateUserName;
     private LocalDateTime updateTime;
 }

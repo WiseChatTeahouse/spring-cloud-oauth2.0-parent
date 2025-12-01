@@ -1,7 +1,7 @@
 package chat.wisechat.oauth2.system.service.impl;
 
 import chat.wisechat.oauth2.system.entity.UserInfo;
-import chat.wisechat.oauth2.system.entity.UserInfoDto;
+import chat.wisechat.oauth2.system.dto.UserInfoDto;
 import chat.wisechat.oauth2.system.mapper.UserInfoMapper;
 import chat.wisechat.oauth2.system.service.UserInfoService;
 import chat.wisechat.oauth2.system.vo.UserInfoVo;

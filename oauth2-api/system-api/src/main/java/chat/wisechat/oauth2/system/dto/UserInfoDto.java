@@ -1,4 +1,4 @@
-package chat.wisechat.oauth2.system.entity;
+package chat.wisechat.oauth2.system.dto;
 
 import lombok.Data;
 

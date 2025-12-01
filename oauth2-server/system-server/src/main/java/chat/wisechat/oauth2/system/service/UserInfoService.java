@@ -1,7 +1,7 @@
 package chat.wisechat.oauth2.system.service;
 
 import chat.wisechat.oauth2.system.entity.UserInfo;
-import chat.wisechat.oauth2.system.entity.UserInfoDto;
+import chat.wisechat.oauth2.system.dto.UserInfoDto;
 import chat.wisechat.oauth2.system.vo.UserInfoVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 

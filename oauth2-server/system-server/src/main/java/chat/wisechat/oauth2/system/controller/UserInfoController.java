@@ -1,6 +1,6 @@
 package chat.wisechat.oauth2.system.controller;
 
-import chat.wisechat.oauth2.system.entity.UserInfoDto;
+import chat.wisechat.oauth2.system.dto.UserInfoDto;
 import chat.wisechat.oauth2.system.service.UserInfoService;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.PostMapping;
