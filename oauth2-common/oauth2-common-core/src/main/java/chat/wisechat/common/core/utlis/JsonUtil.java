@@ -20,6 +20,14 @@ public class JsonUtil {
         return jsonMapper;
     }
 
+    public static <T> T parseObject(String obj, Class<T> clazz) {
+        try {
+            return getMapper().readValue(obj, clazz);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static <T> T parseObject(Object obj, Class<T> clazz) {
         try {
             return getMapper().convertValue(obj, clazz);

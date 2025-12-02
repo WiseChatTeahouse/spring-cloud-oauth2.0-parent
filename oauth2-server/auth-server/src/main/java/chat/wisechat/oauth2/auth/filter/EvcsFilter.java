@@ -2,6 +2,8 @@ package chat.wisechat.oauth2.auth.filter;
 
 import chat.wisechat.common.core.utlis.AESUtil;
 import chat.wisechat.common.core.utlis.JsonUtil;
+import chat.wisechat.oauth2.open.dto.EvcsReq;
+import chat.wisechat.oauth2.open.dto.EvcsResp;
 import chat.wisechat.oauth2.system.feign.RemoteEvcsOperatorInfoFeign;
 import chat.wisechat.oauth2.system.vo.EvcsOperatorInfoVo;
 import jakarta.annotation.Resource;
@@ -50,8 +52,8 @@ public class EvcsFilter extends OncePerRequestFilter {
         String dataSecret = evcsOperatorInfoVo.getDataSecret();
         String dataSecretIv = evcsOperatorInfoVo.getDataSecretIv();
         // 解密改造请求头 添加 Authorization   采用基础的 Basic Auth 加密 用户名和密码
-        Map<String, String> payloadMap = JsonUtil.parseStrMap(payload);
-        String data = payloadMap.get("Data");
+        EvcsReq evcsReq = JsonUtil.parseObject(payload, EvcsReq.class);
+        String data = evcsReq.getData();
         try {
             data = AESUtil.decrypt(data, dataSecret, dataSecretIv);
         } catch (Exception e) {
@@ -76,6 +78,7 @@ public class EvcsFilter extends OncePerRequestFilter {
         filterChain.doFilter(newRequestWrapper, response);
 
         // TODO:待改造响应体
+        EvcsResp.SUCCESS("", "");
 
     }
 }
