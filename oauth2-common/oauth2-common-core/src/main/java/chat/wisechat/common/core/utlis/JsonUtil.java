@@ -1,7 +1,10 @@
 package chat.wisechat.common.core.utlis;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.util.Map;
 
 /**
  * @Author Siberia.Hu
@@ -10,6 +13,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class JsonUtil {
 
     private static final ObjectMapper jsonMapper;
+    static final TypeReference<Map<String, String>> strMapType = new TypeReference<>() {
+    };
 
     public static ObjectMapper getMapper() {
         return jsonMapper;
@@ -18,6 +23,14 @@ public class JsonUtil {
     public static <T> T parseObject(Object obj, Class<T> clazz) {
         try {
             return getMapper().convertValue(obj, clazz);
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Map<String, String> parseStrMap(String json) {
+        try {
+            return getMapper().readValue(json, strMapType);
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }

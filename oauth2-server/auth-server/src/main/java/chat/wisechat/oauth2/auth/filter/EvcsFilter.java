@@ -1,5 +1,7 @@
 package chat.wisechat.oauth2.auth.filter;
 
+import chat.wisechat.common.core.utlis.AESUtil;
+import chat.wisechat.common.core.utlis.JsonUtil;
 import chat.wisechat.oauth2.system.feign.RemoteEvcsOperatorInfoFeign;
 import chat.wisechat.oauth2.system.vo.EvcsOperatorInfoVo;
 import jakarta.annotation.Resource;
@@ -13,6 +15,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.Map;
 
 /**
  * @Author Siberia.Hu
@@ -45,10 +50,32 @@ public class EvcsFilter extends OncePerRequestFilter {
         String dataSecret = evcsOperatorInfoVo.getDataSecret();
         String dataSecretIv = evcsOperatorInfoVo.getDataSecretIv();
         // 解密改造请求头 添加 Authorization   采用基础的 Basic Auth 加密 用户名和密码
+        Map<String, String> payloadMap = JsonUtil.parseStrMap(payload);
+        String data = payloadMap.get("Data");
+        try {
+            data = AESUtil.decrypt(data, dataSecret, dataSecretIv);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        if (StringUtils.isBlank(data)) {
+            return;
+        }
+        Map<String, String> dataMap = JsonUtil.parseStrMap(data);
+        operatorID = dataMap.get("OperatorID");
+        String operatorSecret = dataMap.get("OperatorSecret");
 
+        String authorization = Base64.getEncoder().encodeToString((operatorID + ":" + operatorSecret).getBytes(StandardCharsets.UTF_8));
 
+        String newRequestBody = "grant_type=client_credentials&scope=server";
+        // 创建带新请求体的包装器
+        HttpRequestWrapper newRequestWrapper = new HttpRequestWrapper(requestWrapper, newRequestBody);
+        // 添加必要的请求头
+        newRequestWrapper.addHeader("Authorization", "Basic " + authorization);
+        newRequestWrapper.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
-        filterChain.doFilter(request, response);
+        filterChain.doFilter(newRequestWrapper, response);
+
+        // TODO:待改造响应体
 
     }
 }
