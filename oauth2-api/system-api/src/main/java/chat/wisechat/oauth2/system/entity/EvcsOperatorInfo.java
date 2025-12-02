@@ -1,5 +1,7 @@
 package chat.wisechat.oauth2.system.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -14,6 +16,7 @@ import java.time.LocalDateTime;
 @TableName(value = "e_operator_info")
 public class EvcsOperatorInfo implements Serializable {
 
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     private String operatorId;
     private String selfOperatorId;
@@ -22,6 +25,9 @@ public class EvcsOperatorInfo implements Serializable {
     private String dataSecretIv;
     private String sigSecret;
     private String url;
+    private String selfDataSecret;
+    private String selfDataSecretIv;
+    private String selfSigSecret;
     private Integer status;
     private Integer isDelete;
     private Long createUserId;

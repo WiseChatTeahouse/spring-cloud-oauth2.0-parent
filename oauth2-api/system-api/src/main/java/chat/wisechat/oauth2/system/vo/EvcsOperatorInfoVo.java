@@ -18,5 +18,8 @@ public class EvcsOperatorInfoVo implements Serializable {
     private String dataSecretIv;
     private String sigSecret;
     private String url;
+    private String selfDataSecret;
+    private String selfDataSecretIv;
+    private String selfSigSecret;
     private Integer status;
 }

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
  * @Author Siberia.Hu
  * @Date 2025/12/1  21:17
  */
-@FeignClient(name = "remoteOauthClientInfoFeign", url = "http://localhost:7911")
+@FeignClient(name = "remoteEvcsOperatorInfoFeign", url = "http://localhost:7911")
 public interface RemoteEvcsOperatorInfoFeign {
 
     @GetMapping("/api/evcs/findByOperatorId/{operatorId}/{selfOperatorId}")

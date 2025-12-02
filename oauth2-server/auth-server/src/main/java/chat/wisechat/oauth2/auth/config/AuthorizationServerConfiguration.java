@@ -1,5 +1,6 @@
 package chat.wisechat.oauth2.auth.config;
 
+import chat.wisechat.oauth2.auth.filter.EvcsFilter;
 import chat.wisechat.oauth2.auth.handler.ProjectAuthenticationFailureHandler;
 import chat.wisechat.oauth2.auth.handler.ProjectAuthenticationSuccessHandler;
 import chat.wisechat.oauth2.auth.support.JwtOAuth2AccessTokenGenerator;
@@ -19,6 +20,7 @@ import org.springframework.security.oauth2.server.authorization.token.Delegating
 import org.springframework.security.oauth2.server.authorization.token.OAuth2RefreshTokenGenerator;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CsrfFilter;
 
 import java.util.List;
 
@@ -30,11 +32,16 @@ import java.util.List;
 public class AuthorizationServerConfiguration {
 
     @Resource
+    private EvcsFilter evcsFilter;
+    @Resource
     private UserDetailsService userDetailsService;
 
     @Bean
     public SecurityFilterChain authorizationServerSecurityFilterChain(HttpSecurity http) throws Exception {
         OAuth2AuthorizationServerConfigurer authorizationServerConfigurer = OAuth2AuthorizationServerConfigurer.authorizationServer();
+
+        //TODO: 加个过滤器处理evcs的请求
+        http.addFilterBefore(evcsFilter, CsrfFilter.class);
 
         http
                 .securityMatcher(authorizationServerConfigurer.getEndpointsMatcher())
