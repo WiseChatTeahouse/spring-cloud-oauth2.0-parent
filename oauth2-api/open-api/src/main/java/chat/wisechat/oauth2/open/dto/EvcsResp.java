@@ -26,6 +26,7 @@ public class EvcsResp {
         evcsResp.setRet(1);
         evcsResp.setData(data);
         evcsResp.setSig(sign);
+        evcsResp.setMsg("请求成功");
         return evcsResp;
     }
 

@@ -19,6 +19,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -75,10 +76,36 @@ public class EvcsFilter extends OncePerRequestFilter {
         newRequestWrapper.addHeader("Authorization", "Basic " + authorization);
         newRequestWrapper.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
-        filterChain.doFilter(newRequestWrapper, response);
+        HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper(response);
+        filterChain.doFilter(newRequestWrapper, httpResponseWrapper);
 
+        // 获取原始响应体内容并修改
+        byte[] responseData = httpResponseWrapper.getCaptureAsBytes();
+        // 这里可以根据业务需求修改响应体内容
+        String originalResponseBody = new String(responseData, StandardCharsets.UTF_8);
+        Map<String, String> originalResp = JsonUtil.parseStrMap(originalResponseBody);
+        String token = originalResp.get("access_token");
+        String expiresAt = originalResp.get("expires_in");
+
+        Map<String, Object> newResp = new HashMap<>();
+        newResp.put("OperatorID", operatorID);
+        newResp.put("SuccStat", 1);
+        newResp.put("AccessToken", token);
+        newResp.put("TokenAvailableTime", Long.valueOf(expiresAt));
+        newResp.put("FailReason", 0);
+        String encrypt = "";
+        try {
+            encrypt = AESUtil.encrypt(JsonUtil.toJson(newResp), dataSecret, dataSecretIv);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         // TODO:待改造响应体
-        EvcsResp.SUCCESS("", "");
+        EvcsResp evcsResp = EvcsResp.SUCCESS(encrypt, "123456");
+        String evcsRespJsonStr = JsonUtil.toJson(evcsResp);
 
+        // 设置新的响应体返回给前端
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/json;charset=UTF-8");
+        response.getWriter().write(evcsRespJsonStr);
     }
 }
