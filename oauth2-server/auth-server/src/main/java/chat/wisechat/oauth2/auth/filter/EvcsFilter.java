@@ -16,6 +16,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -35,7 +37,6 @@ public class EvcsFilter extends OncePerRequestFilter {
     @Resource
     private RemoteEvcsOperatorInfoFeign remoteEvcsOperatorInfoFeign;
 
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String selfOperatorID = request.getHeader("evcs-operator");
@@ -45,15 +46,13 @@ public class EvcsFilter extends OncePerRequestFilter {
         }
         HttpRequestWrapper requestWrapper = new HttpRequestWrapper(request);
         String payload = requestWrapper.getPayload();
-        log.info("payload = {}", payload);
-        // TODO:从Data中获取加密的 operatorID 和 operatorSec  并按照base auth 模式写入请求头中
+        EvcsReq evcsReq = JsonUtil.parseObject(payload, EvcsReq.class);
         // 根据 Data中的 operatorID 和 selfOperatorID 去获取运营商的配置信息
-        String operatorID = "MA0MX0001";
+        String operatorID = evcsReq.getOperatorID();
         EvcsOperatorInfoVo evcsOperatorInfoVo = remoteEvcsOperatorInfoFeign.findOperatorInfoByOperatorId(operatorID, selfOperatorID);
         String dataSecret = evcsOperatorInfoVo.getDataSecret();
         String dataSecretIv = evcsOperatorInfoVo.getDataSecretIv();
         // 解密改造请求头 添加 Authorization   采用基础的 Basic Auth 加密 用户名和密码
-        EvcsReq evcsReq = JsonUtil.parseObject(payload, EvcsReq.class);
         String data = evcsReq.getData();
         try {
             data = AESUtil.decrypt(data, dataSecret, dataSecretIv);
@@ -73,8 +72,8 @@ public class EvcsFilter extends OncePerRequestFilter {
         // 创建带新请求体的包装器
         HttpRequestWrapper newRequestWrapper = new HttpRequestWrapper(requestWrapper, newRequestBody);
         // 添加必要的请求头
-        newRequestWrapper.addHeader("Authorization", "Basic " + authorization);
-        newRequestWrapper.addHeader("Content-Type", "application/x-www-form-urlencoded");
+        newRequestWrapper.addHeader(HttpHeaders.AUTHORIZATION, "Basic " + authorization);
+        newRequestWrapper.addHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_FORM_URLENCODED_VALUE);
 
         HttpResponseWrapper httpResponseWrapper = new HttpResponseWrapper(response);
         filterChain.doFilter(newRequestWrapper, httpResponseWrapper);
@@ -114,7 +113,7 @@ public class EvcsFilter extends OncePerRequestFilter {
         String evcsRespJsonStr = JsonUtil.toJson(evcsResp);
         // 设置新的响应体返回给前端
         response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/json;charset=UTF-8");
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.getWriter().write(evcsRespJsonStr);
     }
 }
