@@ -19,6 +19,7 @@ public class EvcsOperatorInfo implements Serializable {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     private String operatorId;
+    private String operatorName;
     private String selfOperatorId;
     private String operatorSecret;
     private String dataSecret;

@@ -25,6 +25,7 @@ public class OauthClientInfo implements Serializable {
     private String redirectUris;
     private Long accessTokenValidity;
     private Long refreshTokenValidity;
+    private Long platformId;
     private Integer isDelete;
     private Long createUserId;
     private String createUserName;

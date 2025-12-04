@@ -10,4 +10,12 @@ import java.io.Serializable;
  */
 @Data
 public class EvcsOperatorInfoDto implements Serializable {
+    private String operatorId;
+    private String operatorName;
+    private String selfOperatorId;
+    private String operatorSecret;
+    private String dataSecret;
+    private String dataSecretIv;
+    private String sigSecret;
+    private String url;
 }
